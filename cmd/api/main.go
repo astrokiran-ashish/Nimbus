@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/astrokiranashish/nimbus/internal/common/configs"
-	"github.com/astrokiranashish/nimbus/internal/common/database"
+	"github.com/astrokiran/nimbus/internal/common/configs"
+	"github.com/astrokiran/nimbus/internal/common/database"
 	"go.uber.org/zap"
 )
 

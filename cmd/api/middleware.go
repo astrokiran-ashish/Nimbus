@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/astrokiranashish/nimbus/internal/common/response"
+	"github.com/astrokiran/nimbus/internal/common/response"
 	"go.uber.org/zap"
 
 	"github.com/tomasen/realip"

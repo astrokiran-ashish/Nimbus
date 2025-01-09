@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/astrokiranashish/nimbus/internal/common/response"
+	"github.com/astrokiran/nimbus/internal/common/response"
 )
 
 func (app *application) status(w http.ResponseWriter, r *http.Request) {

@@ -1,4 +1,4 @@
-module github.com/astrokiranashish/nimbus
+module github.com/astrokiran/nimbus
 
 go 1.20
 

@@ -23,7 +23,7 @@ Nimbus is the monolith service for Astrokiran, designed to handle various functi
 
 2. **Clone the Repository**:
    ```bash
-   git clone https://github.com/astrokiranashish/nimbus.git
+   git clone https://github.com/astrokiran/nimbus.git
    cd nimbus
    ```
 
