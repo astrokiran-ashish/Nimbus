@@ -1,4 +1,4 @@
-package main
+package common_errors
 
 import (
 	"fmt"
@@ -6,11 +6,17 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/astrokiran/nimbus/internal/common/log"
 	"github.com/astrokiran/nimbus/internal/common/response"
 	"go.uber.org/zap"
 )
 
-func (app *application) reportServerError(r *http.Request, err error) {
+type NimbusHTTPErrors struct {
+}
+
+var logger = log.GetLogger()
+
+func (app *NimbusHTTPErrors) ReportServerError(r *http.Request, err error) {
 	var (
 		message = err.Error()
 		method  = r.Method
@@ -19,34 +25,34 @@ func (app *application) reportServerError(r *http.Request, err error) {
 	)
 
 	requestAttrs := zap.Strings("request", []string{"method", method, "url", url})
-	app.logger.Error(message, requestAttrs, zap.String("trace", trace))
+	logger.Error(message, requestAttrs, zap.String("trace", trace))
 }
 
-func (app *application) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
+func (app *NimbusHTTPErrors) ErrorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
 	message = strings.ToUpper(message[:1]) + message[1:]
 
 	err := response.JSONWithHeaders(w, status, map[string]string{"Error": message}, headers)
 	if err != nil {
-		app.reportServerError(r, err)
+		app.ReportServerError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
-func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
-	app.reportServerError(r, err)
+func (app *NimbusHTTPErrors) ServerError(w http.ResponseWriter, r *http.Request, err error) {
+	app.ReportServerError(r, err)
 
 	message := "The server encountered a problem and could not process your request"
-	app.errorMessage(w, r, http.StatusInternalServerError, message, nil)
+	app.ErrorMessage(w, r, http.StatusInternalServerError, message, nil)
 }
 
-func (app *application) notFound(w http.ResponseWriter, r *http.Request) {
+func (app *NimbusHTTPErrors) NotFound(w http.ResponseWriter, r *http.Request) {
 	message := "The requested resource could not be found"
-	app.errorMessage(w, r, http.StatusNotFound, message, nil)
+	app.ErrorMessage(w, r, http.StatusNotFound, message, nil)
 }
 
-func (app *application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+func (app *NimbusHTTPErrors) MethodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	message := fmt.Sprintf("The %s method is not supported for this resource", r.Method)
-	app.errorMessage(w, r, http.StatusMethodNotAllowed, message, nil)
+	app.ErrorMessage(w, r, http.StatusMethodNotAllowed, message, nil)
 }
 
 // func (app *application) badRequest(w http.ResponseWriter, r *http.Request, err error) {

@@ -4,12 +4,24 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-jet/jet/v2/postgres"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
+type Dialect struct {
+	Int    func(value int64) postgres.IntegerExpression
+	String func(value string) postgres.StringExpression
+}
+
+var PostgresDialect = Dialect{
+	Int:    postgres.Int,
+	String: postgres.String,
+}
+
 type Database struct {
-	Conn *sqlx.DB
+	Conn    *sqlx.DB
+	Dialect Dialect
 }
 
 type Config struct {
@@ -32,7 +44,7 @@ func NewDatabase(cfg Config) (*Database, error) {
 	// Set the maximum lifetime of a connection.
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 
-	return &Database{Conn: db}, nil
+	return &Database{Conn: db, Dialect: PostgresDialect}, nil
 }
 
 // Close gracefully shuts down the database connection.

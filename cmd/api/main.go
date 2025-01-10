@@ -5,8 +5,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/astrokiran/nimbus/internal/auth"
 	"github.com/astrokiran/nimbus/internal/common/configs"
 	"github.com/astrokiran/nimbus/internal/common/database"
+	common_errors "github.com/astrokiran/nimbus/internal/common/errors"
+	"github.com/astrokiran/nimbus/internal/common/log"
+	"github.com/astrokiran/nimbus/internal/common/services"
+	users "github.com/astrokiran/nimbus/internal/user"
 	"go.uber.org/zap"
 )
 
@@ -24,10 +29,12 @@ type config struct {
 }
 
 type application struct {
-	logger *zap.Logger
-	config config
-	wg     sync.WaitGroup
-	db     *database.Database
+	logger       *zap.Logger
+	config       config
+	wg           sync.WaitGroup
+	db           *database.Database
+	commonErrors *common_errors.NimbusHTTPErrors
+	auth         *auth.Auth
 }
 
 func run(logger *zap.Logger) error {
@@ -49,20 +56,49 @@ func run(logger *zap.Logger) error {
 	}
 	defer db.Close()
 
+	// User
+	users.Init(db)
+	userInstance, err := users.GetInstance()
+	if err != nil {
+		return err
+	}
+
+	// SMS Service
+	smsService := services.NewSMSService("us-east-1")
+
+	// Auth
+	auth := auth.NewAuth(db, userInstance, smsService, logger)
+
 	app := &application{
 		config: cfg,
 		db:     db,
 		logger: logger,
+		auth:   auth,
 	}
 
 	return app.serveHTTP()
 }
 
 func main() {
-	logger, _ := zap.NewProduction()
+	//Initialize Logger
+	err := log.InitLogger(zap.Config{
+		Level:         zap.NewAtomicLevelAt(zap.InfoLevel),
+		Encoding:      "json",
+		EncoderConfig: zap.NewProductionEncoderConfig(),
+		OutputPaths: []string{
+			"stdout",
+		},
+		ErrorOutputPaths: []string{
+			"stderr",
+		},
+	})
+	if err != nil {
+		panic("failed to initialize logger: " + err.Error())
+	}
+	logger := log.GetLogger()
 	defer logger.Sync()
 
-	err := run(logger)
+	err = run(logger)
 	if err != nil {
 		trace := string(logger.Sync().Error())
 		logger.Error(err.Error(), zap.Any("trace", trace))

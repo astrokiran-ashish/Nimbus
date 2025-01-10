@@ -98,3 +98,13 @@ migrations/force:
 migrations/version:
 	go run -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest -path=./assets/migrations -database="postgres://${DB_DSN}" version
 
+
+
+# ==================================================================================== #
+# JET SCHEMA GENERATOR
+# ==================================================================================== #
+.PHONY: generate-schema user=$1 password=$2 dbname=$3 path=$4
+generate-schema:
+	@echo "Generating schema with Jet..."
+	go run github.com/go-jet/jet/v2/cmd/jet@latest -source=postgres -host=localhost -port=5432 -user=${user} -password=${password} -dbname=${dbname} -schema=public -path=${path}
+# ==================================================================================== #
