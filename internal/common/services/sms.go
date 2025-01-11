@@ -3,9 +3,8 @@ package services
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/twilio/twilio-go"
+	openapi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
 type ISMSService interface {
@@ -14,25 +13,35 @@ type ISMSService interface {
 }
 
 type SMSService struct {
-	snsClient *sns.SNS
+	client *twilio.RestClient
 }
 
 func NewSMSService(region string) *SMSService {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String(region),
-	}))
+
+	client := twilio.NewRestClientWithParams(twilio.ClientParams{
+		Username: "",
+		Password: "",
+	})
+
 	return &SMSService{
-		snsClient: sns.New(sess),
+		client: client,
 	}
 }
 
 func (s *SMSService) SendOTP(phoneNumber string, otp int64) error {
-	message := fmt.Sprintf("Your OTP is: %d", otp)
-	input := &sns.PublishInput{
-		Message:     aws.String(message),
-		PhoneNumber: aws.String(phoneNumber),
+	message := fmt.Sprintf("Welcome to AstroKiran. Your OTP is: %d", otp)
+	params := &openapi.CreateMessageParams{}
+	params.SetTo(phoneNumber) // Recipient's phone number
+	params.SetFrom("")        // Your Twilio phone number
+	params.SetBody(message)
+
+	// Send SMS
+	resp, err := s.client.Api.CreateMessage(params)
+	if err != nil {
+		return fmt.Errorf("failed to send SMS: %v", err)
 	}
 
-	_, err := s.snsClient.Publish(input)
-	return err
+	// Print response details
+	fmt.Printf("SMS sent successfully: SID %s\n", *resp.Sid)
+	return nil
 }

@@ -16,15 +16,15 @@ type UserAuth struct {
 	ID               uuid.UUID `sql:"primary_key"`
 	UserID           uuid.UUID
 	SessionID        uuid.UUID
-	JwtTokenHash     string
-	RefreshTokenHash string
+	JwtTokenHash     *string
+	RefreshTokenHash *string
 	DeviceDetails    *string
-	Otp              int32
-	OtpCreatedAt     time.Time
-	OtpValiditySecs  int32
-	OtpAttempts      int32
+	Otp              *int32
+	OtpCreatedAt     *time.Time
+	OtpValiditySecs  *int32
+	OtpAttempts      *int32
 	PhoneNumber      string
 	CreatedAt        time.Time
-	ExpiresAt        time.Time
+	ExpiresAt        *time.Time
 	UpdatedAt        time.Time
 }

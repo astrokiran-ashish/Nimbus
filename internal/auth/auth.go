@@ -10,13 +10,13 @@ import (
 
 type Auth struct {
 	db           *database.Database
-	Users        users.UsersI
+	Users        users.IUsers
 	SMSService   services.ISMSService
 	commonErrors *common_errors.NimbusHTTPErrors
 	logger       *zap.Logger
 }
 
-func NewAuth(db *database.Database, users users.UsersI, smsService services.ISMSService, logger *zap.Logger) *Auth {
+func NewAuth(db *database.Database, users users.IUsers, smsService services.ISMSService, logger *zap.Logger) *Auth {
 	return &Auth{
 		db:           db,
 		Users:        users,

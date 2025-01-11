@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -32,9 +33,13 @@ type Config struct {
 }
 
 func NewDatabase(cfg Config) (*Database, error) {
-	db, err := sqlx.Open("postgres", cfg.DSN)
+	fmt.Println("Connecting to database...", cfg.DSN)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.ConnMaxLifetime)
+	defer cancel()
+
+	db, err := sqlx.ConnectContext(ctx, "postgres", "postgres://"+cfg.DSN)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return nil, err
 	}
 
 	// Set the maximum number of open connections to the database.

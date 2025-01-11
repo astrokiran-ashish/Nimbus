@@ -10,18 +10,24 @@ import (
 )
 
 func (auth *Auth) CreateSession(userID uuid.UUID, phonenumber string, otp int64) error {
+	otpInt32 := int32(otp)
+	now := time.Now()
+	validitySecs := int32(configs.GetInt("OTP_VALIDITY_SECS", 60))
+
 	session := &model.UserAuth{
+		ID:              uuid.New(),
 		UserID:          userID,
 		SessionID:       uuid.New(),
 		PhoneNumber:     phonenumber,
-		Otp:             int32(otp),
-		OtpCreatedAt:    time.Now(),
-		OtpValiditySecs: int32(configs.GetInt("OTP_VALIDITY_SECS", 60)),
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
+		Otp:             &otpInt32,
+		OtpCreatedAt:    &now,
+		OtpValiditySecs: &validitySecs,
+		CreatedAt:       now,
+		UpdatedAt:       now,
 	}
 
 	stmt := table.UserAuth.INSERT(
+		table.UserAuth.ID,
 		table.UserAuth.UserID,
 		table.UserAuth.SessionID,
 		table.UserAuth.PhoneNumber,
@@ -31,6 +37,7 @@ func (auth *Auth) CreateSession(userID uuid.UUID, phonenumber string, otp int64)
 		table.UserAuth.CreatedAt,
 		table.UserAuth.UpdatedAt,
 	).VALUES(
+		session.ID,
 		session.UserID,
 		session.SessionID,
 		session.PhoneNumber,

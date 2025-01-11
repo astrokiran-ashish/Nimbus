@@ -42,7 +42,7 @@ func run(logger *zap.Logger) error {
 
 	cfg.baseURL = configs.GetString("BASE_URL", "http://localhost:4444")
 	cfg.httpPort = configs.GetInt("HTTP_PORT", 4444)
-	cfg.db.dsn = configs.GetString("DB_DSN", "user:pass@localhost:5432/db")
+	cfg.db.dsn = configs.GetString("DB_DSN", "postgres:@localhost:5432/nimbus?sslmode=disable")
 	cfg.db.automigrate = configs.GetBool("DB_AUTOMIGRATE", true)
 	databaseConfig := database.Config{
 		DSN:             cfg.db.dsn,
@@ -57,7 +57,7 @@ func run(logger *zap.Logger) error {
 	defer db.Close()
 
 	// User
-	users.Init(db)
+	users.InitUser(db, logger)
 	userInstance, err := users.GetInstance()
 	if err != nil {
 		return err

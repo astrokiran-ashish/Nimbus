@@ -1,6 +1,11 @@
 package auth
 
-import "github.com/astrokiran/nimbus/internal/models/nimbus/public/model"
+import (
+	"fmt"
+
+	"github.com/astrokiran/nimbus/internal/models/nimbus/public/model"
+	"go.uber.org/zap"
+)
 
 func (auth *Auth) generateOTPForPhonenumber(phoneNumber string) (int64, error) {
 
@@ -9,6 +14,7 @@ func (auth *Auth) generateOTPForPhonenumber(phoneNumber string) (int64, error) {
 		PhoneNumber: &phoneNumber,
 	})
 	if err != nil {
+		auth.logger.Error("Error while getting user", zap.Any("err", err))
 		return 0, err
 	}
 
@@ -24,6 +30,7 @@ func (auth *Auth) generateOTPForPhonenumber(phoneNumber string) (int64, error) {
 	// Send OTP via SMS
 	err = auth.SMSService.SendOTP(phoneNumber, otp)
 	if err != nil {
+		fmt.Println("Error sending OTP:", err)
 		return 0, err
 	}
 

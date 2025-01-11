@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/astrokiran/nimbus/internal/common/response"
+	"go.uber.org/zap"
 )
 
 func (auth *Auth) LoginViaOTP(w http.ResponseWriter, r *http.Request) {
