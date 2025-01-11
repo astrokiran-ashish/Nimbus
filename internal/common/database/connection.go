@@ -1,15 +1,28 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	"github.com/go-jet/jet/v2/postgres"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
+type Dialect struct {
+	Int    func(value int64) postgres.IntegerExpression
+	String func(value string) postgres.StringExpression
+}
+
+var PostgresDialect = Dialect{
+	Int:    postgres.Int,
+	String: postgres.String,
+}
+
 type Database struct {
-	Conn *sqlx.DB
+	Conn    *sqlx.DB
+	Dialect Dialect
 }
 
 type Config struct {
@@ -20,9 +33,13 @@ type Config struct {
 }
 
 func NewDatabase(cfg Config) (*Database, error) {
-	db, err := sqlx.Open("postgres", cfg.DSN)
+	fmt.Println("Connecting to database...", cfg.DSN)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.ConnMaxLifetime)
+	defer cancel()
+
+	db, err := sqlx.ConnectContext(ctx, "postgres", "postgres://"+cfg.DSN)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return nil, err
 	}
 
 	// Set the maximum number of open connections to the database.
@@ -32,7 +49,7 @@ func NewDatabase(cfg Config) (*Database, error) {
 	// Set the maximum lifetime of a connection.
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 
-	return &Database{Conn: db}, nil
+	return &Database{Conn: db, Dialect: PostgresDialect}, nil
 }
 
 // Close gracefully shuts down the database connection.

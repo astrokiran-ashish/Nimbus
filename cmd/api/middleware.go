@@ -15,7 +15,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		defer func() {
 			err := recover()
 			if err != nil {
-				app.serverError(w, r, fmt.Errorf("%s", err))
+				app.commonErrors.ServerError(w, r, fmt.Errorf("%s", err))
 			}
 		}()
 

@@ -13,6 +13,6 @@ func (app *application) status(w http.ResponseWriter, r *http.Request) {
 
 	err := response.JSON(w, http.StatusOK, data)
 	if err != nil {
-		app.serverError(w, r, err)
+		app.commonErrors.ServerError(w, r, err)
 	}
 }
