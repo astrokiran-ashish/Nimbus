@@ -8,9 +8,9 @@ import (
 	"github.com/astrokiran/nimbus/internal/auth"
 	"github.com/astrokiran/nimbus/internal/common/configs"
 	"github.com/astrokiran/nimbus/internal/common/database"
-	common_errors "github.com/astrokiran/nimbus/internal/common/errors"
 	"github.com/astrokiran/nimbus/internal/common/log"
 	"github.com/astrokiran/nimbus/internal/common/services"
+	"github.com/astrokiran/nimbus/internal/consultant"
 	users "github.com/astrokiran/nimbus/internal/user"
 	"go.uber.org/zap"
 )
@@ -29,12 +29,12 @@ type config struct {
 }
 
 type application struct {
-	logger       *zap.Logger
-	config       config
-	wg           sync.WaitGroup
-	db           *database.Database
-	commonErrors *common_errors.NimbusHTTPErrors
-	auth         *auth.Auth
+	logger     *zap.Logger
+	config     config
+	wg         sync.WaitGroup
+	db         *database.Database
+	auth       *auth.Auth
+	consultant *consultant.Consultant
 }
 
 func run(logger *zap.Logger) error {
@@ -68,12 +68,14 @@ func run(logger *zap.Logger) error {
 
 	// Auth
 	auth := auth.NewAuth(db, userInstance, smsService, logger)
+	consultant := consultant.NewConsultant(db, auth, userInstance, smsService)
 
 	app := &application{
-		config: cfg,
-		db:     db,
-		logger: logger,
-		auth:   auth,
+		config:     cfg,
+		db:         db,
+		logger:     logger,
+		auth:       auth,
+		consultant: consultant,
 	}
 
 	return app.serveHTTP()

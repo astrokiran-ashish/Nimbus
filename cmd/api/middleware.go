@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	commonErrors "github.com/astrokiran/nimbus/internal/common/errors"
 	"github.com/astrokiran/nimbus/internal/common/response"
 	"go.uber.org/zap"
 
@@ -15,7 +16,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 		defer func() {
 			err := recover()
 			if err != nil {
-				app.commonErrors.ServerError(w, r, fmt.Errorf("%s", err))
+				commonErrors.ServerError(w, r, fmt.Errorf("%s", err))
 			}
 		}()
 

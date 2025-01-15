@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	commonErrors "github.com/astrokiran/nimbus/internal/common/errors"
 	"github.com/astrokiran/nimbus/internal/common/response"
 	"go.uber.org/zap"
 )
@@ -13,13 +14,13 @@ func (auth *Auth) LoginViaOTP(w http.ResponseWriter, r *http.Request) {
 	var req LoginViaOTPRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		auth.commonErrors.ErrorMessage(w, r, http.StatusBadRequest, "Invalid request body", nil)
+		commonErrors.ErrorMessage(w, r, http.StatusBadRequest, "Invalid request body", nil)
 		return
 	}
 
-	otp, err := auth.generateOTPForPhonenumber(req.AreaCode + req.PhoneNumber)
+	otp, err := auth.GenerateOTPForPhonenumber(req.AreaCode + req.PhoneNumber)
 	if err != nil {
-		auth.commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to generate OTP", nil)
+		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to generate OTP", nil)
 		return
 	}
 
@@ -29,7 +30,7 @@ func (auth *Auth) LoginViaOTP(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		auth.logger.Error("Error while sending OTP to customer", zap.Any("err", err))
-		auth.commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to send OTP", nil)
+		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to send OTP", nil)
 		return
 	}
 }

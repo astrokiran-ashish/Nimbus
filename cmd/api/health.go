@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	commonErrors "github.com/astrokiran/nimbus/internal/common/errors"
+
 	"github.com/astrokiran/nimbus/internal/common/response"
 )
 
@@ -13,6 +15,6 @@ func (app *application) status(w http.ResponseWriter, r *http.Request) {
 
 	err := response.JSON(w, http.StatusOK, data)
 	if err != nil {
-		app.commonErrors.ServerError(w, r, err)
+		commonErrors.ServerError(w, r, err)
 	}
 }

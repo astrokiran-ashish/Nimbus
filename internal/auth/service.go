@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (auth *Auth) generateOTPForPhonenumber(phoneNumber string) (int64, error) {
+func (auth *Auth) GenerateOTPForPhonenumber(phoneNumber string) (int64, error) {
 
 	// Get User matching the phone number
 	user, err := auth.Users.GetOrCreateUser(&model.User{
