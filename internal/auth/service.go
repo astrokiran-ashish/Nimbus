@@ -1,7 +1,11 @@
 package auth
 
 import (
+	"errors"
+
 	"github.com/astrokiran/nimbus/internal/models/nimbus/public/model"
+	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -33,4 +37,23 @@ func (auth *Auth) GenerateOTPForPhonenumber(phoneNumber string) (*model.UserAuth
 	// }
 
 	return session, nil
+}
+
+// VerifyToken verifies the JWT token and returns the user ID if valid.
+func (auth *Auth) ValidateToken(tokenString string) (uuid.UUID, error) {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the token's signing method is valid
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(auth.jwtSecret), nil
+	})
+
+	if err != nil || !token.Valid {
+		auth.logger.Error("Error validating token", zap.Any("err", err))
+		return uuid.Nil, errors.New("invalid token")
+	}
+
+	return claims.UserID, nil
 }

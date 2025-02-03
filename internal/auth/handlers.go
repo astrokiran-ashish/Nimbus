@@ -2,8 +2,8 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	commonErrors "github.com/astrokiran/nimbus/internal/common/errors"
@@ -52,9 +52,7 @@ func (auth *Auth) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to retrieve session", nil)
 		return
 	}
-	fmt.Println("time.now", time.Now().Local())
-	fmt.Println("otp time", session.OtpCreatedAt.Add(time.Duration(*session.OtpValiditySecs)*time.Second).Local())
-	fmt.Println("Time After", time.Now().After(session.OtpCreatedAt.Add(time.Duration(*session.OtpValiditySecs)*time.Second)))
+
 	if time.Now().After(session.OtpCreatedAt.Add(time.Duration(*session.OtpValiditySecs) * time.Second)) {
 		commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, "OTP expired", nil)
 		return
@@ -76,6 +74,36 @@ func (auth *Auth) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		IsValid:      true,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+	})
+	if err != nil {
+		auth.logger.Error("Error while sending verification response", zap.Any("err", err))
+		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to send response", nil)
+		return
+	}
+}
+
+func (auth *Auth) VerifyToken(w http.ResponseWriter, r *http.Request) {
+	tokenString := r.Header.Get("Authorization")
+	if tokenString == "" {
+		commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, "Missing token", nil)
+		return
+	}
+
+	// Remove "Bearer " prefix if present
+	const bearerPrefix = "Bearer "
+	if strings.HasPrefix(tokenString, bearerPrefix) {
+		tokenString = strings.TrimPrefix(tokenString, bearerPrefix)
+	}
+
+	userID, err := auth.ValidateToken(tokenString)
+	if err != nil {
+		commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, "Invalid token", nil)
+		return
+	}
+
+	err = response.JSON(w, http.StatusOK, map[string]interface{}{
+		"userID": userID.String(),
+		"valid":  true,
 	})
 	if err != nil {
 		auth.logger.Error("Error while sending verification response", zap.Any("err", err))

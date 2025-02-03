@@ -6,6 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-jet/jet/v2 v2.12.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.10.9

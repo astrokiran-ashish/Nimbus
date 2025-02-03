@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 
@@ -11,6 +12,13 @@ import (
 type Claims struct {
 	UserID uuid.UUID `json:"userID"`
 	jwt.RegisteredClaims
+}
+
+func (c *Claims) Valid() error {
+	if c.ExpiresAt != nil && c.ExpiresAt.Time.Before(time.Now()) {
+		return errors.New("token has expired")
+	}
+	return nil
 }
 
 func (auth *Auth) generateRandomSixDigit() int64 {

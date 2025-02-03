@@ -7,6 +7,7 @@ func (auth *Auth) AuthRoutes() chi.Router {
 
 	r.Post("/login", auth.LoginViaOTP)
 	r.Post("/verify/otp", auth.VerifyOTP)
+	r.Get("/verify/token", auth.VerifyToken)
 
 	return r
 
