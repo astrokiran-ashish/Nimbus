@@ -19,7 +19,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/status", app.status)
 
 	mux.Mount("/api/v1/auth", app.auth.AuthRoutes())
-	mux.Mount("/api/v1/consultant", app.consultant.AuthRoutes())
+	mux.Mount("/api/v1/consultant", app.consultant.ConsultantRoutes())
 
 	return mux
 }

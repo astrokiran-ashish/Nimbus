@@ -26,6 +26,9 @@ type config struct {
 	readTimeout    time.Duration
 	writeTimeout   time.Duration
 	shutdownPeriod time.Duration
+	jwtSecret      string
+	jwtExpiry      time.Duration
+	refreshExpiry  time.Duration
 }
 
 type application struct {
@@ -44,6 +47,9 @@ func run(logger *zap.Logger) error {
 	cfg.httpPort = configs.GetInt("HTTP_PORT", 4444)
 	cfg.db.dsn = configs.GetString("DB_DSN", "postgres:@localhost:5432/nimbus?sslmode=disable")
 	cfg.db.automigrate = configs.GetBool("DB_AUTOMIGRATE", true)
+	cfg.jwtSecret = configs.GetString("JWT_SECRET", "secret")
+	cfg.jwtExpiry = time.Duration(configs.GetInt("JWT_EXPIRY_MINS", 15))
+	cfg.refreshExpiry = time.Duration(configs.GetInt("JWT_REFRESH_TOKEN_EXPIRY_DAYS", 30))
 	databaseConfig := database.Config{
 		DSN:             cfg.db.dsn,
 		MaxOpenConns:    configs.GetInt("DB_MAX_OPEN_CONNS", 10),
@@ -67,7 +73,7 @@ func run(logger *zap.Logger) error {
 	smsService := services.NewSMSService("us-east-1")
 
 	// Auth
-	auth := auth.NewAuth(db, userInstance, smsService, logger)
+	auth := auth.NewAuth(db, userInstance, smsService, logger, cfg.jwtSecret, cfg.jwtExpiry, cfg.refreshExpiry)
 	consultant := consultant.NewConsultant(db, auth, userInstance, smsService)
 
 	app := &application{

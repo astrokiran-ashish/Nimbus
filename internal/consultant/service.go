@@ -30,7 +30,7 @@ func (c *Consultant) GenerateOTP(phoneNumber string) (int64, error) {
 
 	// Send OTP to the user's phone number
 	// Create Session
-	err = c.auth.CreateSession(user.UserID, phoneNumber, otp)
+	_, err = c.auth.CreateSession(user.UserID, phoneNumber, otp)
 	if err != nil {
 		return 0, err
 	}
