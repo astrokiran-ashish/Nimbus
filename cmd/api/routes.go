@@ -3,14 +3,15 @@ package main
 import (
 	"net/http"
 
+	commonErrors "github.com/astrokiran/nimbus/internal/common/errors"
 	"github.com/go-chi/chi/v5"
 )
 
 func (app *application) routes() http.Handler {
 	mux := chi.NewRouter()
 
-	mux.NotFound(app.commonErrors.NotFound)
-	mux.MethodNotAllowed(app.commonErrors.MethodNotAllowed)
+	mux.NotFound(commonErrors.NotFound)
+	mux.MethodNotAllowed(commonErrors.MethodNotAllowed)
 
 	mux.Use(app.logAccess)
 	mux.Use(app.recoverPanic)
@@ -18,6 +19,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/status", app.status)
 
 	mux.Mount("/api/v1/auth", app.auth.AuthRoutes())
+	mux.Mount("/api/v1/consultant", app.consultant.ConsultantRoutes())
 
 	return mux
 }

@@ -13,11 +13,13 @@ import (
 type Dialect struct {
 	Int    func(value int64) postgres.IntegerExpression
 	String func(value string) postgres.StringExpression
+	UUID   func(value fmt.Stringer) postgres.StringExpression
 }
 
 var PostgresDialect = Dialect{
 	Int:    postgres.Int,
 	String: postgres.String,
+	UUID:   postgres.UUID,
 }
 
 type Database struct {

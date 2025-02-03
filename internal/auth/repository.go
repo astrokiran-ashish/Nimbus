@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (auth *Auth) CreateSession(userID uuid.UUID, phonenumber string, otp int64) error {
+func (auth *Auth) CreateSession(userID uuid.UUID, phonenumber string, otp int64) (*model.UserAuth, error) {
 	otpInt32 := int32(otp)
 	now := time.Now()
 	validitySecs := int32(configs.GetInt("OTP_VALIDITY_SECS", 60))
@@ -50,9 +50,44 @@ func (auth *Auth) CreateSession(userID uuid.UUID, phonenumber string, otp int64)
 
 	_, err := stmt.Exec(auth.db.Conn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return session, nil
 
+}
+
+func (a *Auth) GetSession(userId uuid.UUID, sessionId uuid.UUID) (*model.UserAuth, error) {
+
+	stmt := table.UserAuth.SELECT(table.UserAuth.AllColumns).FROM(table.UserAuth).WHERE(
+		table.UserAuth.UserID.EQ(a.db.Dialect.UUID(userId)).AND(table.UserAuth.SessionID.EQ(a.db.Dialect.UUID(sessionId))))
+	session := model.UserAuth{}
+	err := stmt.Query(a.db.Conn, &session)
+	return &session, err
+}
+
+func (auth *Auth) UpdateSession(session *model.UserAuth) (*model.UserAuth, error) {
+	now := time.Now()
+
+	// Prepare the update statement
+	stmt := table.UserAuth.UPDATE(
+		table.UserAuth.JwtTokenHash,
+		table.UserAuth.RefreshTokenHash,
+		table.UserAuth.UpdatedAt,
+	).SET(
+		session.JwtTokenHash,
+		session.RefreshTokenHash,
+		now,
+	).WHERE(
+		table.UserAuth.UserID.EQ(auth.db.Dialect.UUID(session.UserID)).AND(table.UserAuth.SessionID.EQ(auth.db.Dialect.UUID(session.SessionID))),
+	)
+
+	// Execute the update statement
+	_, err := stmt.Exec(auth.db.Conn)
+	if err != nil {
+		return nil, err
+	}
+
+	// Retrieve the updated session
+	return session, nil
 }

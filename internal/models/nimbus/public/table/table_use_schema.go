@@ -11,6 +11,7 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	Action = Action.FromSchema(schema)
+	Consultant = Consultant.FromSchema(schema)
 	Permission = Permission.FromSchema(schema)
 	Role = Role.FromSchema(schema)
 	SchemaMigrations = SchemaMigrations.FromSchema(schema)
