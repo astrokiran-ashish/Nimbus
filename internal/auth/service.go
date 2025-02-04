@@ -2,6 +2,9 @@ package auth
 
 import (
 	"errors"
+	"net/http"
+	"strings"
+	"time"
 
 	"github.com/astrokiran/nimbus/internal/models/nimbus/public/model"
 	"github.com/golang-jwt/jwt"
@@ -56,4 +59,45 @@ func (auth *Auth) ValidateToken(tokenString string) (uuid.UUID, error) {
 	}
 
 	return claims.UserID, nil
+}
+
+// ProcessToken extracts the token from the HTTP request header,
+// removes the "Bearer " prefix if present, and validates the token.
+func (auth *Auth) ProcessToken(r *http.Request) (uuid.UUID, error) {
+	tokenString := r.Header.Get("Authorization")
+	if tokenString == "" {
+		return uuid.Nil, errors.New("missing token")
+	}
+
+	const bearerPrefix = "Bearer "
+	tokenString = strings.TrimPrefix(tokenString, bearerPrefix)
+
+	return auth.ValidateToken(tokenString)
+}
+
+// VerifyOTPService validates the supplied OTP and generates tokens upon success.
+func (auth *Auth) VerifyOTPService(req VerifyOTPRequest) (VerifyOTPResponse, error) {
+	session, err := auth.GetSession(req.UserID, req.SessionID)
+	if err != nil {
+		return VerifyOTPResponse{}, err
+	}
+
+	if time.Now().After(session.OtpCreatedAt.Add(time.Duration(*session.OtpValiditySecs) * time.Second)) {
+		return VerifyOTPResponse{}, errors.New("OTP expired")
+	}
+
+	if int32(*session.Otp) != int32(req.OTP) {
+		return VerifyOTPResponse{}, errors.New("invalid OTP")
+	}
+
+	accessToken, refreshToken, err := auth.GenerateTokens(session.UserID)
+	if err != nil {
+		return VerifyOTPResponse{}, errors.New("failed to generate tokens")
+	}
+
+	return VerifyOTPResponse{
+		IsValid:      true,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
 }

@@ -3,8 +3,6 @@ package auth
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
-	"time"
 
 	commonErrors "github.com/astrokiran/nimbus/internal/common/errors"
 	"github.com/astrokiran/nimbus/internal/common/response"
@@ -39,6 +37,7 @@ func (auth *Auth) LoginViaOTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// VerifyOTP decodes the request, calls the service method for OTP verification, and writes the response.
 func (auth *Auth) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	var req VerifyOTPRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -47,34 +46,18 @@ func (auth *Auth) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := auth.GetSession(req.UserID, req.SessionID)
+	verifyResp, err := auth.VerifyOTPService(req)
 	if err != nil {
-		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to retrieve session", nil)
+		// Use unauthorized error for OTP expiration or mismatch cases.
+		if err.Error() == "OTP expired" || err.Error() == "Invalid OTP" {
+			commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, err.Error(), nil)
+		} else {
+			commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to verify OTP", nil)
+		}
 		return
 	}
 
-	if time.Now().After(session.OtpCreatedAt.Add(time.Duration(*session.OtpValiditySecs) * time.Second)) {
-		commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, "OTP expired", nil)
-		return
-	}
-
-	if int32(*session.Otp) != int32(req.OTP) {
-		commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, "Invalid OTP", nil)
-		return
-	}
-
-	// Generate tokens after OTP verification
-	accessToken, refreshToken, err := auth.GenerateTokens(session.UserID)
-	if err != nil {
-		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to generate tokens", nil)
-		return
-	}
-
-	err = response.JSON(w, http.StatusOK, VerifyOTPResponse{
-		IsValid:      true,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	})
+	err = response.JSON(w, http.StatusOK, verifyResp)
 	if err != nil {
 		auth.logger.Error("Error while sending verification response", zap.Any("err", err))
 		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to send response", nil)
@@ -83,30 +66,18 @@ func (auth *Auth) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (auth *Auth) VerifyToken(w http.ResponseWriter, r *http.Request) {
-	tokenString := r.Header.Get("Authorization")
-	if tokenString == "" {
-		commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, "Missing token", nil)
-		return
-	}
-
-	// Remove "Bearer " prefix if present
-	const bearerPrefix = "Bearer "
-	if strings.HasPrefix(tokenString, bearerPrefix) {
-		tokenString = strings.TrimPrefix(tokenString, bearerPrefix)
-	}
-
-	userID, err := auth.ValidateToken(tokenString)
+	userID, err := auth.ProcessToken(r)
 	if err != nil {
+		auth.logger.Error("Token validation failed", zap.Any("err", err))
 		commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, "Invalid token", nil)
 		return
 	}
 
 	err = response.JSON(w, http.StatusOK, map[string]interface{}{
-		"userID": userID.String(),
-		"valid":  true,
+		"userID": userID,
 	})
 	if err != nil {
-		auth.logger.Error("Error while sending verification response", zap.Any("err", err))
+		auth.logger.Error("Failed to send response", zap.Any("err", err))
 		commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to send response", nil)
 		return
 	}
