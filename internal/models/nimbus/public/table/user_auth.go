@@ -24,13 +24,13 @@ type userAuthTable struct {
 	RefreshTokenHash postgres.ColumnString
 	DeviceDetails    postgres.ColumnString
 	Otp              postgres.ColumnInteger
-	OtpCreatedAt     postgres.ColumnTimestamp
+	OtpCreatedAt     postgres.ColumnTimestampz
 	OtpValiditySecs  postgres.ColumnInteger
 	OtpAttempts      postgres.ColumnInteger
 	PhoneNumber      postgres.ColumnString
-	CreatedAt        postgres.ColumnTimestamp
-	ExpiresAt        postgres.ColumnTimestamp
-	UpdatedAt        postgres.ColumnTimestamp
+	CreatedAt        postgres.ColumnTimestampz
+	ExpiresAt        postgres.ColumnTimestampz
+	UpdatedAt        postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -78,13 +78,13 @@ func newUserAuthTableImpl(schemaName, tableName, alias string) userAuthTable {
 		RefreshTokenHashColumn = postgres.StringColumn("refresh_token_hash")
 		DeviceDetailsColumn    = postgres.StringColumn("device_details")
 		OtpColumn              = postgres.IntegerColumn("otp")
-		OtpCreatedAtColumn     = postgres.TimestampColumn("otp_created_at")
+		OtpCreatedAtColumn     = postgres.TimestampzColumn("otp_created_at")
 		OtpValiditySecsColumn  = postgres.IntegerColumn("otp_validity_secs")
 		OtpAttemptsColumn      = postgres.IntegerColumn("otp_attempts")
 		PhoneNumberColumn      = postgres.StringColumn("phone_number")
-		CreatedAtColumn        = postgres.TimestampColumn("created_at")
-		ExpiresAtColumn        = postgres.TimestampColumn("expires_at")
-		UpdatedAtColumn        = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn        = postgres.TimestampzColumn("created_at")
+		ExpiresAtColumn        = postgres.TimestampzColumn("expires_at")
+		UpdatedAtColumn        = postgres.TimestampzColumn("updated_at")
 		allColumns             = postgres.ColumnList{IDColumn, UserIDColumn, SessionIDColumn, JwtTokenHashColumn, RefreshTokenHashColumn, DeviceDetailsColumn, OtpColumn, OtpCreatedAtColumn, OtpValiditySecsColumn, OtpAttemptsColumn, PhoneNumberColumn, CreatedAtColumn, ExpiresAtColumn, UpdatedAtColumn}
 		mutableColumns         = postgres.ColumnList{UserIDColumn, SessionIDColumn, JwtTokenHashColumn, RefreshTokenHashColumn, DeviceDetailsColumn, OtpColumn, OtpCreatedAtColumn, OtpValiditySecsColumn, OtpAttemptsColumn, PhoneNumberColumn, CreatedAtColumn, ExpiresAtColumn, UpdatedAtColumn}
 	)

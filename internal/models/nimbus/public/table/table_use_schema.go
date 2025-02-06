@@ -12,6 +12,7 @@ package table
 func UseSchema(schema string) {
 	Action = Action.FromSchema(schema)
 	Consultant = Consultant.FromSchema(schema)
+	Consultation = Consultation.FromSchema(schema)
 	Permission = Permission.FromSchema(schema)
 	Role = Role.FromSchema(schema)
 	SchemaMigrations = SchemaMigrations.FromSchema(schema)

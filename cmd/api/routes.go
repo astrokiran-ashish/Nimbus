@@ -20,6 +20,7 @@ func (app *application) routes() http.Handler {
 
 	mux.Mount("/api/v1/auth", app.auth.AuthRoutes())
 	mux.Mount("/api/v1/consultant", app.consultant.ConsultantRoutes())
+	mux.Mount("/api/v1/consultation", app.consultation.ConsultationRoutes())
 
 	return mux
 }
