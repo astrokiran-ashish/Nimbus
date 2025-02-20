@@ -13,14 +13,15 @@ func (app *application) routes() http.Handler {
 	mux.NotFound(commonErrors.NotFound)
 	mux.MethodNotAllowed(commonErrors.MethodNotAllowed)
 
-	mux.Use(app.logAccess)
-	mux.Use(app.recoverPanic)
+	// mux.Use(app.logAccess)
+	// mux.Use(app.recoverPanic)
 
 	mux.Get("/status", app.status)
 
 	mux.Mount("/api/v1/auth", app.auth.AuthRoutes())
-	mux.Mount("/api/v1/consultant", app.consultant.ConsultantRoutes())
+	mux.Mount("/api/v1/consultants", app.consultant.ConsultantRoutes())
 	mux.Mount("/api/v1/consultation", app.consultation.ConsultationRoutes())
+	mux.Mount("/api/v1/notification", app.notification.NotificationRoutes())
 
 	return mux
 }

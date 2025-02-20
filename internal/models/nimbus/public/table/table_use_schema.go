@@ -11,6 +11,7 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	Action = Action.FromSchema(schema)
+	AgoraWebhookEvents = AgoraWebhookEvents.FromSchema(schema)
 	Consultant = Consultant.FromSchema(schema)
 	Consultation = Consultation.FromSchema(schema)
 	Permission = Permission.FromSchema(schema)

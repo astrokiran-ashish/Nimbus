@@ -11,6 +11,7 @@ import (
 
 type Claims struct {
 	UserID uuid.UUID `json:"userID"`
+	Type   string    `json:"type"`
 	jwt.RegisteredClaims
 }
 
@@ -32,15 +33,19 @@ func (auth *Auth) GenerateTokens(userID uuid.UUID) (string, string, error) {
 
 	accessClaims := Claims{
 		UserID: userID,
+		Type:   "access",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(accessTokenExpiry),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
 	refreshClaims := Claims{
 		UserID: userID,
+		Type:   "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(refreshTokenExpiry),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 

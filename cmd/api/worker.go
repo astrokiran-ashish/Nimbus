@@ -25,14 +25,21 @@ func (app *application) startWorker(c client.Client, taskQueue string, notificat
 	// Create worker instance
 	w := worker.New(c, taskQueue, worker.Options{})
 	// Register workflow
-	w.RegisterWorkflowWithOptions(workflows.ConsultationWorkflow,
-		workflow.RegisterOptions{Name: constants.ConsultationWorkflowName})
-	w.RegisterWorkflowWithOptions(workflows.ConsultantStartWorkflow,
-		workflow.RegisterOptions{Name: constants.ConsultantStartWorkflowName})
+	w.RegisterWorkflowWithOptions(workflows.ConsultationLifecycleWorkflow,
+		workflow.RegisterOptions{Name: constants.ConsultationLifecycleWorkflowName})
+	w.RegisterWorkflowWithOptions(workflows.ConsultationHandShakeWorkflow,
+		workflow.RegisterOptions{Name: constants.ConsultationHandShakeWorkflowName})
+	w.RegisterWorkflowWithOptions(workflows.ConsultationSessionWorkflow,
+		workflow.RegisterOptions{Name: constants.ConsultationSessionWorkflowName})
+	w.RegisterWorkflowWithOptions(workflows.ConsultationBillingWorkflow,
+		workflow.RegisterOptions{Name: constants.ConsultationBillingWorkflowName})
 
 	activityInstance := activities.NewActivities(notification)
 	w.RegisterActivityWithOptions(activityInstance.SendNotificationToConsultant, activity.RegisterOptions{
 		Name: constants.SendNotificationToConsultantActivity,
+	})
+	w.RegisterActivityWithOptions(activityInstance.SendNotificationToUser, activity.RegisterOptions{
+		Name: constants.SendNotificationToUserActivity,
 	})
 	// Run worker in a separate goroutine to avoid blocking
 	go func() {

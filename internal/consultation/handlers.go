@@ -2,6 +2,7 @@ package consultation
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	common_errors "github.com/astrokiran/nimbus/internal/common/errors"
@@ -62,4 +63,30 @@ func (con *Consultation) UpdateConsultationHandler(w http.ResponseWriter, r *htt
 		common_errors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to encode response", nil)
 		return
 	}
+}
+
+func (con *Consultation) ConsultantActionEventHandler(w http.ResponseWriter, r *http.Request) {
+	var req ConsultantActionEventRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		common_errors.ErrorMessage(w, r, http.StatusBadRequest, "Invalid request body", nil)
+		return
+	}
+	if err := con.HandleConsultantActionEvent(req); err != nil {
+		common_errors.ErrorMessage(w, r, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+}
+
+func (con *Consultation) ConsultationSessionEvents(w http.ResponseWriter, r *http.Request) {
+	var event WebhookRequest
+	err := json.NewDecoder(r.Body).Decode(&event)
+	if err != nil {
+		common_errors.ErrorMessage(w, r, http.StatusBadRequest, "Invalid request body", nil)
+		return
+	}
+	fmt.Printf("eventType %d eventChannelName %s ", event.EventType, event.Payload.ChannelName)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Ok"))
 }

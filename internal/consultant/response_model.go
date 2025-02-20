@@ -1,8 +1,10 @@
 package consultant
 
 type LoginViaOTPResponse struct {
-	OTP     int64  `json:"otp"`
-	Message string `json:"message,omitempty"`
+	OTP       int64  `json:"otp"`
+	Message   string `json:"message,omitempty"`
+	UserID    string `json:"user_id,omitempty"`
+	SessionID string `json:"session_id,omitempty"`
 }
 
 type VerifyOTPResponse struct {

@@ -76,6 +76,24 @@ func (c *Consultant) GetOrCreateConsultant(userID uuid.UUID) error {
 	return nil
 }
 
+func (c *Consultant) ListConsultants() ([]*model.Consultant, error) {
+	stmt := table.Consultant.SELECT(
+		table.Consultant.AllColumns,
+	).FROM(
+		table.Consultant.INNER_JOIN(
+			table.User,
+			table.User.UserID.EQ(table.Consultant.UserID),
+		),
+	)
+
+	var consultants []*model.Consultant
+	err := stmt.Query(c.db.Conn, &consultants)
+	if err != nil {
+		return nil, err
+	}
+	return consultants, nil
+}
+
 func (c *Consultant) GetConsultantByPhoneNumber(phoneNumber string) (*model.Consultant, error) {
 	stmt := table.Consultant.SELECT(
 		table.Consultant.AllColumns,

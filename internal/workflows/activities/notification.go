@@ -12,3 +12,10 @@ func (a *Activities) SendNotificationToConsultant(ctx context.Context, consultan
 	}
 	return nil
 }
+
+func (a *Activities) SendNotificationToUser(ctx context.Context, userID uuid.UUID, message string) error {
+	if err := a.notification.SendNotificationToUser(userID, message); err != nil {
+		return err
+	}
+	return nil
+}

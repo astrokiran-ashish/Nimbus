@@ -7,6 +7,7 @@ func (c *Consultant) ConsultantRoutes() chi.Router {
 
 	r.Post("/login", c.Login)
 	r.Get("/", c.GetConsultant)
+	r.Get("/list", c.ListConsultantsHandler)
 
 	return r
 

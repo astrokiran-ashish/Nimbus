@@ -1,9 +1,17 @@
 package workflowconstants
 
 const (
-	ConsultationWorkflowName        = "ConsultationWorkflow"
-	UpdateConsultationSignal        = "UpdateConsultationSignal"
-	UpdateConsultationReceiveSignal = "UpdateConsultationReceiveSignal"
+	ConsultationLifecycleWorkflowName = "ConsultationLifecycleWorkflow"
+	UpdateConsultationSignal          = "UpdateConsultationSignal"
+	UpdateConsultationReceiveSignal   = "UpdateConsultationReceiveSignal"
+	SessionEndSignalCh                = "SessionEndSignalCh"
+	UserResponseSignalCh              = "UserResponseSignalCh"
+	UserWaitSignalCh                  = "UserWaitSignalCh"
+	ConsultationHandShakeWorkflowName = "ConsultationHandShakeWorkflow"
+	ConsultationSessionWorkflowName   = "ConsultationSessionWorkflow"
+	ConsultantOnCallCh                = "ConsultantOnCallCh"
 
-	ConsultantStartWorkflowName = "ConsultantStartWorkflow"
+	AgoraWehbookEventSignalCh = "AgoraWehbookEventSignalCh"
+
+	ConsultationBillingWorkflowName = "ConsultationBillingWorkflow"
 )

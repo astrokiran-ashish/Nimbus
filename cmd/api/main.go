@@ -47,6 +47,7 @@ type application struct {
 	auth         *auth.Auth
 	consultant   *consultant.Consultant
 	consultation *consultation.Consultation
+	notification *notification.Notification
 }
 
 func run(logger *zap.Logger) error {
@@ -107,6 +108,7 @@ func run(logger *zap.Logger) error {
 		auth:         auth,
 		consultant:   consultant,
 		consultation: consultation,
+		notification: notification,
 	}
 
 	// Start Temporal worker in a new goroutine

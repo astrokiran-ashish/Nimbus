@@ -16,18 +16,34 @@ func (ast *Consultant) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	otp, err := ast.GenerateOTP(req.AreaCode + req.PhoneNumber)
+	session, err := ast.GenerateOTP(req.AreaCode + req.PhoneNumber)
 	if err != nil {
 		common_errors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to generate OTP", nil)
 		return
 	}
 
 	err = response.JSON(w, http.StatusOK, &LoginViaOTPResponse{
-		OTP:     otp,
-		Message: "OTP sent successfully",
+		OTP:       int64(*session.Otp),
+		Message:   "OTP sent successfully",
+		UserID:    session.UserID.String(),
+		SessionID: session.SessionID.String(),
 	})
 	if err != nil {
 		common_errors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to send OTP", nil)
+		return
+	}
+}
+
+func (c *Consultant) ListConsultantsHandler(w http.ResponseWriter, r *http.Request) {
+	consultants, err := c.ListConsultants()
+	if err != nil {
+		common_errors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to get consultants", nil)
+		return
+	}
+
+	err = response.JSON(w, http.StatusOK, consultants)
+	if err != nil {
+		common_errors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to send response", nil)
 		return
 	}
 }

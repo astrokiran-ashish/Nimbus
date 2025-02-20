@@ -16,3 +16,21 @@ type UpdateConsultationRequest struct {
 	UserWaitTimeSecs     int64     `json:"user_wait_time_secs"`
 	ConsultationTimeSecs int64     `json:"consultation_time_secs"`
 }
+
+type ConsultantActionEventRequest struct {
+	ConsultationID string `json:"consultation_id"`
+	Action         string `json:"action"`
+}
+
+type WebhookRequest struct {
+	NoticeID  string  `json:"noticeId"`
+	ProductID int64   `json:"productId"`
+	EventType int     `json:"eventType"`
+	Payload   Payload `json:"payload"`
+}
+
+type Payload struct {
+	ClientSeq   int64  `json:"clientSeq"`
+	UID         int    `json:"uid"`
+	ChannelName string `json:"channelName"`
+}

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	commonErrors "github.com/astrokiran/nimbus/internal/common/errors"
@@ -42,6 +43,7 @@ func (auth *Auth) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	var req VerifyOTPRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		fmt.Printf("Error: %v\n", err)
 		commonErrors.ErrorMessage(w, r, http.StatusBadRequest, "Invalid request body", nil)
 		return
 	}
@@ -49,7 +51,7 @@ func (auth *Auth) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 	verifyResp, err := auth.VerifyOTPService(req)
 	if err != nil {
 		// Use unauthorized error for OTP expiration or mismatch cases.
-		if err.Error() == "OTP expired" || err.Error() == "Invalid OTP" {
+		if err.Error() == "OTP expired" || err.Error() == "invalid OTP" {
 			commonErrors.ErrorMessage(w, r, http.StatusUnauthorized, err.Error(), nil)
 		} else {
 			commonErrors.ErrorMessage(w, r, http.StatusInternalServerError, "Failed to verify OTP", nil)
