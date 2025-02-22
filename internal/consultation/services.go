@@ -49,6 +49,7 @@ func (con *Consultation) HandleUpdateConsultation(req UpdateConsultationRequest)
 func (con *Consultation) HandleConsultantActionEvent(req ConsultantActionEventRequest) error {
 	workflowID, signalCh, err := EventRouter(req)
 	if err != nil {
+		fmt.Println("failed to route event: %w", err)
 		return fmt.Errorf("failed to route event: %w", err)
 	}
 	consultantActionEvent := workflowstates.ConsultantActionEvent{

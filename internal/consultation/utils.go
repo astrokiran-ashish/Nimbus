@@ -24,7 +24,7 @@ func toConsultationState(con *model.Consultation) workflowstates.ConsultationSta
 
 func EventRouter(event ConsultantActionEventRequest) (string, string, error) {
 	var workflowID, signalChannelName string
-
+	fmt.Printf("event: %v\n", event)
 	switch event.Action {
 	case "accept", "reject":
 		workflowID = fmt.Sprintf("%s:%s", constants.ConsultationHandShakeWorkflowName, event.ConsultationID)
@@ -32,6 +32,9 @@ func EventRouter(event ConsultantActionEventRequest) (string, string, error) {
 	case "on_call":
 		workflowID = fmt.Sprintf("%s:%s", constants.ConsultationHandShakeWorkflowName, event.ConsultationID)
 		signalChannelName = constants.ConsultantOnCallCh
+	case "user_accept_call":
+		workflowID = fmt.Sprintf("%s:%s", constants.ConsultationHandShakeWorkflowName, event.ConsultationID)
+		signalChannelName = constants.UserResponseSignalCh
 	default:
 		return "", "", fmt.Errorf("invalid action")
 	}

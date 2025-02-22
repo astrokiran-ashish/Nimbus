@@ -15,3 +15,8 @@ type ConsultantActionEvent struct {
 	ConsultationID string `json:"consultation_id"`
 	Action         string `json:"action"`
 }
+
+type UserActionEvent struct {
+	ConsultationID string `json:"consultation_id"`
+	Action         string `json:"action"`
+}

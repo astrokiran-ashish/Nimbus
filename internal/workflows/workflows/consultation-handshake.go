@@ -106,8 +106,9 @@ func ConsultationHandShakeWorkflow(ctx workflow.Context, state workflowstates.Co
 	selector.AddReceive(consultantOnCallCh, func(c workflow.ReceiveChannel, more bool) {
 		logger.Info("Consultant is on call")
 		notification = map[string]string{
-			"message":    "Astrologer on Call. Please connect",
-			"event_type": "call",
+			"message":         "Astrologer on Call. Please connect",
+			"event_type":      "call",
+			"consultation_id": state.ConsultationID,
 		}
 		eventJsonString, err = utils.MapToJsonString(notification)
 		workflow.ExecuteActivity(ctx, constants.SendNotificationToUserActivity, state.UserID, eventJsonString).Get(ctx, nil)
@@ -132,10 +133,11 @@ func ConsultationHandShakeWorkflow(ctx workflow.Context, state workflowstates.Co
 	}
 
 	var userAccepted bool
-	var userResponse string
+	var userResponse workflowstates.UserActionEvent
 
 	userCh := workflow.GetSignalChannel(ctx, constants.UserResponseSignalCh)
 	userTimer := workflow.NewTimer(ctx, 2*time.Minute)
+	selector = workflow.NewSelector(ctx)
 
 	selector.AddFuture(userTimer, func(f workflow.Future) {
 		logger.Info("User did not respond in time")
@@ -147,6 +149,8 @@ func ConsultationHandShakeWorkflow(ctx workflow.Context, state workflowstates.Co
 		logger.Info("Received user's response", "response", userResponse)
 		userAccepted = true
 	})
+
+	selector.Select(ctx)
 
 	if userAccepted {
 		logger.Info("User accepted the call. Handshake complete")
